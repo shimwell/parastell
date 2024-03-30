@@ -1,5 +1,4 @@
 import argparse
-import yaml
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +10,8 @@ import cad_to_dagmc
 import read_vmec
 
 from . import log
-from .utils import expand_ang_list, normalize, m2cm, invessel_build_def
+from .utils import ( expand_ang_list, normalize, read_yaml_config, m2cm,
+    invessel_build_def )
 
 def orient_spline_surfaces(volume_id):
     """Extracts the inner and outer surface IDs for a given ParaStell in-vessel
@@ -551,25 +551,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_yaml_config(filename):
-    """Read YAML file describing the stellarator in-vessel component
-    configuration and extract all data.
-    """
-    with open(filename) as yaml_file:
-        all_data = yaml.safe_load(yaml_file)
-
-    return all_data['vmec_file'], all_data['invessel_build']
-
-
 def generate_invessel_build():
     """Main method when run as a command line script.
     """
     args = parse_args()
 
-    vmec_file, invessel_build = read_yaml_config(args.filename)
+    all_data = read_yaml_config(args.filename)
 
+    vmec_file = all_data['vmec_file']
     vmec = read_vmec.vmec_data(vmec_file)
 
+    invessel_build = all_data['invessel_build']
     ivb_dict = invessel_build_def.copy()
     ivb_dict.update(invessel_build)
 

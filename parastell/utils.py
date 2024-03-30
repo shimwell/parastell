@@ -1,3 +1,4 @@
+import yaml
 import math
 
 import numpy as np
@@ -55,6 +56,16 @@ def expand_ang_list(ang_list, num_ang):
     ang_list_exp = np.append(ang_list_exp, ang_list[-1])
 
     return ang_list_exp
+
+
+def read_yaml_config(filename):
+    """Read YAML file describing ParaStell configuration and extract all data.
+    """
+    with open(filename) as yaml_file:
+        all_data = yaml.safe_load(yaml_file)
+
+    return all_data
+
 
 # invessel_build_def (dict): dictionary of in-vessel component
 #     parameters, including

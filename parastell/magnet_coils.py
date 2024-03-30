@@ -1,4 +1,3 @@
-import yaml
 import argparse
 
 import numpy as np
@@ -7,7 +6,7 @@ import cubit
 
 from . import log
 from . import cubit_io as cubit_io 
-from .utils import normalize, m2cm, magnets_def
+from .utils import normalize, read_yaml_config, m2cm, magnets_def
 
 class MagnetSet(object):
     """An object representing a set of modular stellarator magnet coils.
@@ -543,23 +542,14 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_yaml_config(filename):
-    """Read YAML file describing the stellarator magnet configuration and
-    extract all data.
-    """
-    with open(filename) as yaml_file:
-        all_data = yaml.safe_load(yaml_file)
-
-    return all_data['magnet_coils']
-
-
 def generate_magnet_set():
     """Main method when run as command line script.
     """
     args = parse_args()
 
-    magnets = read_yaml_config(args.filename)
+    all_data = read_yaml_config(args.filename)
 
+    magnets = all_data['magnet_coils']
     magnets_dict = magnets_def.copy()
     magnets_dict.update(magnets)
 

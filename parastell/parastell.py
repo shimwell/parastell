@@ -1,5 +1,4 @@
 import argparse
-import yaml
 
 import cubit
 import read_vmec
@@ -10,8 +9,8 @@ from . import invessel_build as ivb
 from . import magnet_coils as mc
 from . import source_mesh as sm
 from . import cubit_io as cubit_io
-from .utils import ( invessel_build_def, magnets_def, source_def,
-    dagmc_export_def )
+from .utils import ( read_yaml_config, invessel_build_def, magnets_def,
+    source_def, dagmc_export_def )
 
 
 def make_material_block(mat_tag, block_id, vol_id_str):
@@ -303,7 +302,9 @@ class Stellarator(object):
         (Internal function not intended to be called externally)
         """
         if self.magnet_set:
-            vol_id_str = " ".join(str(i) for i in list(self.magnet_set.volume_ids))
+            vol_id_str = " ".join(
+                str(i) for i in list(self.magnet_set.volume_ids)
+            )
             cubit.cmd(
                 f'group "mat:{self.magnet_set.mat_tag}" add volume {vol_id_str}'
             )
@@ -416,44 +417,38 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_yaml_config(filename):
-    """Read YAML file describing the stellarator configuration and extract all
-    data.
-    """
-    with open(filename) as yaml_file:
-        all_data = yaml.safe_load(yaml_file)
-
-    return (
-        all_data['vmec_file'], all_data['invessel_build'],
-        all_data['magnet_coils'], all_data['source_mesh'],
-        all_data['dagmc_export']
-    )
-
-
 def parastell():
     """Main method when run as a command line script.
     """
     args = parse_args()
 
-    (
-        vmec_file, invessel_build, magnets, source, dagmc_export
-    ) = read_yaml_config(args.filename)
+    all_data = read_yaml_config(args.filename)
+
+    vmec_file = all_data['vmec_file']
 
     stellarator = Stellarator(vmec_file)
 
-    # Invessel Build
+    # In-vessel Build
+    invessel_build = all_data['invessel_build']
+
     stellarator.construct_invessel_build(invessel_build)
     stellarator.export_invessel_build(invessel_build)
 
     # Magnets
+    magnets = all_data['magnet_coils']
+
     stellarator.construct_magnets(magnets)
     stellarator.export_magnets(magnets)
 
     # Source Mesh
+    source = all_data['source_mesh']
+
     stellarator.construct_source_mesh(source)
     stellarator.export_source_mesh(source)
     
     # DAGMC export
+    dagmc_export = all_data['dagmc_export']
+
     stellarator.export_dagmc(dagmc_export)
 
 

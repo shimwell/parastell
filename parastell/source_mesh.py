@@ -1,5 +1,4 @@
 import argparse
-import yaml
 from pathlib import Path
 
 import numpy as np
@@ -7,7 +6,7 @@ from pymoab import core, types
 import read_vmec
 
 from . import log as log
-from .utils import m2cm, source_def
+from .utils import read_yaml_config, m2cm, source_def
 
 def rxn_rate(s):
     """Calculates fusion reaction rate in plasma.
@@ -378,25 +377,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_yaml_src(filename):
-    """Read YAML file describing the stellarator source mesh configuration and
-    extract all data.
-    """
-    with open(filename) as yaml_file:
-        all_data = yaml.safe_load(yaml_file)
-
-    return all_data['vmec_file'], all_data['source']
-
-
 def generate_source_mesh():
     """Main method when run as a command line script.
     """
     args = parse_args()
 
-    vmec_file, source = read_yaml_src(args.filename)
+    all_data = read_yaml_config(args.filename)
 
+    vmec_file = all_data['vmec_file']
     vmec = read_vmec.vmec_data(vmec_file)
 
+    source = all_data['source']
     source_dict = source_def.copy()
     source_dict.update(source)
 
